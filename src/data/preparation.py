@@ -31,6 +31,7 @@ class BookingData(pd.DataFrame):
         self._update_inplace(self[self['children'].notna()])
 
     def _enrich(self):
+        # Getting arrival and booking dates right
         month_mapping = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7,
                          'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
         self['arrival_date_month'] = self['arrival_date_month'].apply(lambda m: month_mapping[m])
@@ -38,6 +39,12 @@ class BookingData(pd.DataFrame):
                                                    day=self.arrival_date_day_of_month))
         self['booking_date'] = self.apply(lambda r: r['arrival_date'] - timedelta(days=r['lead_time']), axis=1)
         self['booking_date_day_of_week'] = self['booking_date'].dt.weekday
+
+        # Number of Guests
+        self['guests'] = self['adults'] + self['children'] + self['babies']
+
+        # Length of stay
+        self['stay_total_nights'] = self['stays_in_weekend_nights'] + self['stays_in_week_nights']
 
     def _drop_cols(self):
         self.drop(columns=['company'], axis=1, inplace=True)
